@@ -2,7 +2,12 @@ import { HttpTypes } from "@medusajs/types"
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_URL = process.env.MEDUSA_BACKEND_URL
-const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+// MEDUSA_PUBLISHABLE_KEY first: NEXT_PUBLIC_* values are inlined into the
+// bundle at build time, and images are built once with a placeholder and
+// deployed to multiple environments with per-env keys at runtime.
+const PUBLISHABLE_API_KEY =
+  process.env.MEDUSA_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || "us"
 
 const regionMapCache = {

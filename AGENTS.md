@@ -34,12 +34,14 @@ deploy.** Merge only after validating on a review app or dev.
 
 ## Known sharp edges
 
-- **NEXT_PUBLIC_* inlining**: the storefront image is built with a
-  placeholder `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`. Server-side code
-  (`src/lib/config.ts`, `src/middleware.ts`) reads `process.env` at runtime,
-  so the HelmRelease env supplies the real key. Anything referenced in
-  CLIENT components gets the build-time placeholder — Stripe checkout
-  (`NEXT_PUBLIC_STRIPE_KEY`) will need a runtime-config strategy in Phase 2.
+- **NEXT_PUBLIC_* inlining**: Next.js inlines `NEXT_PUBLIC_*` values into
+  ALL bundles (including middleware) at build time — runtime env CANNOT
+  override them. The image is built with a placeholder key, so server-side
+  code (`src/lib/config.ts`, `src/middleware.ts`) reads the un-prefixed
+  `MEDUSA_PUBLISHABLE_KEY` at runtime (HelmRelease env), falling back to the
+  `NEXT_PUBLIC_` var for local dev. Anything referenced in CLIENT components
+  still gets the build-time value — Stripe checkout
+  (`NEXT_PUBLIC_STRIPE_KEY`) will need the same treatment in Phase 2.
 - `generateStaticParams` calls the backend during `next build`; failures are
   caught and return `[]`, so CI builds work without a live backend (pages
   render dynamically instead).
