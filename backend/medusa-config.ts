@@ -21,6 +21,17 @@ const redisUrl =
     ? `redis://${process.env.REDIS_IP}:${process.env.REDIS_PORT || '6379'}`
     : undefined)
 
+// The dev fallback is public (this repo is), so a deployment that loses its
+// secret must refuse to start rather than sign tokens with it.
+function secret(name: string): string {
+  const value = process.env[name] || process.env.SECRET_KEY
+  if (value) return value
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(`${name} or SECRET_KEY must be set when NODE_ENV=production`)
+  }
+  return 'supersecret'
+}
+
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl,
@@ -29,8 +40,8 @@ module.exports = defineConfig({
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
       authCors: process.env.AUTH_CORS!,
-      jwtSecret: process.env.JWT_SECRET || process.env.SECRET_KEY || "supersecret",
-      cookieSecret: process.env.COOKIE_SECRET || process.env.SECRET_KEY || "supersecret",
+      jwtSecret: secret('JWT_SECRET'),
+      cookieSecret: secret('COOKIE_SECRET'),
     }
   }
 })
